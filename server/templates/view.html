@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image with Overlay Rectangle</title>
+    <style>
+        /* Container for the image */
+        .image-container {
+            position: relative;
+            width: 600px;  /* Set the width of the container */
+            height: 400px; /* Set the height of the container */
+        }
+
+        /* The image inside the container */
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* The overlay rectangle */
+        .overlay-rectangle {
+            position: absolute;
+            border: 2px solid #ff0000;  /* Rectangle border color */
+            background-color: rgba(255, 0, 0, 0.3); /* Semi-transparent background */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="image-container">
+        <!-- Image element -->
+        <img src="your-image.png" alt="Image Description">
+
+        <!-- Rectangle overlay with a hyperlink -->
+        <a href="https://example.com" class="overlay-rectangle" style="left: 20%; top: 30%; width: 40%; height: 20%;"></a>
+    </div>
+
+</body>
+</html>
