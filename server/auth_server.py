@@ -7,6 +7,8 @@ from flask_admin.contrib.sqla import ModelView
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user
 import datetime
+from utils import parse_svg_toilets
+from pathlib import Path
 
 app = Flask(__name__)
 
@@ -99,17 +101,19 @@ def store_data():
     return jsonify({"message": "Invalid credentials"}), 401
 
 @app.route('/view')
-def index():
-    # table_data = [EVENT_HISTORY[key] for key in EVENT_HISTORY]
-    data_records = Event.query.all()
+def overview():
+    floor_names = ["T2_1"]
+    all_floors = []
+    for floor_name in floor_names:
+        floor_path = 'static/' + floor_name + ".svg"
+        all_floors.append({"svg_path":floor_path,
+                           "toilets": parse_svg_toilets(floor_path)})
+    pass
+    return render_template('overview_template.html', all_floors=all_floors)
 
-    data_header = ["id", "node_id", "event_type", "tag_id", "stall_id", "timestamp"]
-    # Convert the records into a list of dictionaries
-    data_list = []
-    for record in data_records:
-        data_list.append([record.id, record.node_id, record.event_type,
-                          record.tag_id, record.stall_id, record.timestamp])
-    return render_template('view_template.html', headers=data_header, table_data=data_list)
+@app.route('/view/<string:toilet_name>/')
+def toilet_view(toilet_name):
+    return render_template('toilet_view_template.html', toilet_name=toilet_name)
 
 # Run the server
 if __name__ == '__main__':
