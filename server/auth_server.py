@@ -74,6 +74,7 @@ class EventModelView(ModelView):
     column_sortable_list = ['node_id', 'event_type', 'tag_id']
     def is_accessible(self):
         return True
+
 if DEBUG:
     admin.add_view(NodeModelView(Node, db.session))
     admin.add_view(EventModelView(Event, db.session))
@@ -131,6 +132,7 @@ def compute_stats(timestamps):
         if state == 2:
             detected = True
     return np.array(visit_timestamps, dtype=np.int64), np.array(visit_durations, dtype=np.int64)
+
 @app.route('/view')
 def overview():
     floor_names = ["T2_1"]
@@ -157,8 +159,19 @@ def overview():
 
 @app.route('/view/<string:toilet_name>/')
 def toilet_view(toilet_name):
-    return render_template('toilet_view_template.html', toilet_name=toilet_name)
+    timestamps = get_timestamps(toilet_name, 0)
+    stats = compute_stats(timestamps)
+    time_now = int(time.time())
+    histogram, _ = np.histogram(stats[0], bins=(np.arange(0, 24 * 60 * 60, 60*60)+time_now - 23*60*60))
+    labels = np.arange(0, 23, 1)-23
+    return render_template(
+        template_name_or_list='toilet_view_template.html',
+        data=histogram.tolist(),
+        labels=labels.tolist(),
+        toilet_name=toilet_name
+    )
 
 # Run the server
 if __name__ == '__main__':
-    app.run(debug=DEBUG, host="0.0.0.0")
+    app.run(debug=DEBUG)
+    # app.run(debug=DEBUG, host="0.0.0.0")

@@ -1,10 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>{{toilet_name}}</title>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<title>Chartjs Charts</title>
 </head>
+
 <body>
-{{toilet_name}}
+	<h>{{toilet_name}}</h>
+	<div style="height: 50vh; width: 50%;">
+		<canvas id="myChart"></canvas>
+	</div>
+
+	<script>
+		const labels = {{ labels | tojson}};
+
+		const data = {
+			labels: labels,
+			datasets: [{
+				label: 'visits',
+				backgroundColor: 'rgb(150, 150, 200)',
+				borderColor: 'rgb(100, 100, 200)',
+				data: {{ data | tojson}},
+			}]
+		};
+
+		const config = {
+			type: 'line',
+			data: data,
+			options: { maintainAspectRatio: false}
+		};
+
+		const myChart = new Chart(
+			document.getElementById('myChart'),
+			config
+		);
+
+	</script>
 </body>
 </html>
