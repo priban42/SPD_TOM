@@ -11,3 +11,8 @@
 To install the required dependencies, run:  
 ```bash  
 pip install -r /path/to/requirements.txt  
+```
+## toilet naming convention
+{building}\_{section}\_{floor}\_{instance}\_{male/female}\_{number of stalls}
+## example:
+T2_B2_1_1_F_1

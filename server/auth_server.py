@@ -9,6 +9,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, cur
 import datetime
 from utils import parse_svg_toilets
 from pathlib import Path
+import numpy as np
 
 app = Flask(__name__)
 
@@ -25,6 +26,7 @@ jwt = JWTManager(app)
 admin = Admin(app, name="Admin Dashboard", template_mode="bootstrap3")
 # login_manager = LoginManager(app)
 EVENT_TYPES = ["door_closed", "door_opened", "PIR", "RFID"]
+
 
 # Database models
 class Node(db.Model):
@@ -44,7 +46,7 @@ class Event(db.Model):
     event_type = db.Column(db.Integer, nullable=False)
     tag_id = db.Column(db.Integer, nullable=False)
     stall_id = db.Column(db.Integer, nullable=False)
-    timestamp = db.Column(db.String(100), nullable=False)
+    timestamp = db.Column(db.Integer, nullable=False)
 
 # Create tables
 with app.app_context():
@@ -85,7 +87,7 @@ def store_data():
     data = request.get_json()
     current_node = Node.query.filter_by(node_id=data['node_id']).first()
     if current_node and current_node.check_password(data['password']):
-        current_time = time.time()
+        current_time = int(time.time())
         if not (len(data["timestamps"]) == len(data["event_types"]) == len(data["tag_ids"]) == len(data["stall_ids"])):
             return jsonify({"message": "Invalid data"}), 401
         for i in range(len(data["timestamps"])):
@@ -100,14 +102,56 @@ def store_data():
         return jsonify({"message": "Data stored successfully"}), 201
     return jsonify({"message": "Invalid credentials"}), 401
 
+def get_timestamps(node_id, stall_id):
+    events = Event.query.filter_by(node_id=node_id, stall_id=stall_id).all()
+    event_timestamps = np.zeros((len(events), 2), dtype=np.int64)
+    for i in range(len(events)):
+        event_timestamps[i, 0] = events[i].timestamp
+        event_timestamps[i, 1] = events[i].event_type
+    return event_timestamps
+
+def compute_stats(timestamps):
+    last_state = 1
+    detected = False
+    door_closed_ts = None
+    visit_timestamps = []
+    visit_durations = []
+    for i in range(timestamps.shape[0]):
+        state = timestamps[i, 1]
+        if state == 1 and detected and last_state == 0:
+            visit_timestamps.append(door_closed_ts)
+            visit_durations.append(timestamps[i, 0] - door_closed_ts)
+            detected = False
+            door_closed_ts = None
+            last_state = 1
+        if state == 0:
+            detected = False
+            last_state = 0
+            door_closed_ts = timestamps[i, 0]
+        if state == 2:
+            detected = True
+    return np.array(visit_timestamps, dtype=np.int64), np.array(visit_durations, dtype=np.int64)
 @app.route('/view')
 def overview():
     floor_names = ["T2_1"]
     all_floors = []
+    # timestamps = get_timestamps("T2_B3_1_0_M_3", 0)
+    # stats = compute_stats(timestamps)
     for floor_name in floor_names:
         floor_path = 'static/' + floor_name + ".svg"
         all_floors.append({"svg_path":floor_path,
                            "toilets": parse_svg_toilets(floor_path)})
+        for toilet in all_floors[-1]['toilets']:
+            visits = 0
+            visit_time = 0
+            for stall_id in range(all_floors[-1]['toilets'][toilet]['stall_count']):
+                timestamps = get_timestamps(toilet, stall_id)
+                stats = compute_stats(timestamps)
+                visits += len(stats[0])
+                visit_time += np.sum(stats[1])
+            all_floors[-1]['toilets'][toilet]['visits'] = visits
+            all_floors[-1]['toilets'][toilet]['visit_time'] = visit_time
+
     pass
     return render_template('overview_template.html', all_floors=all_floors)
 
@@ -117,4 +161,4 @@ def toilet_view(toilet_name):
 
 # Run the server
 if __name__ == '__main__':
-    app.run(debug=DEBUG)
+    app.run(debug=DEBUG, host="0.0.0.0")

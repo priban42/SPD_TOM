@@ -29,8 +29,13 @@ def parse_svg_toilets(svg_file_path):
     width = float(raw_dict['width'][:-2])
     height = float(raw_dict['height'][:-2])
     for i in range(len(raw_tolets)):
+        label = raw_tolets[i]['{http://www.inkscape.org/namespaces/inkscape}label']
         toilets[raw_tolets[i]['{http://www.inkscape.org/namespaces/inkscape}label']] = {'width':100*float(raw_tolets[i]['width'])/width,
                                                                                           'height':100*float(raw_tolets[i]['height'])/height,
                                                                                           'x':100*(float(raw_tolets[i]['x']) + t1[0] + t2[0])/width,
-                                                                                          'y':100*(float(raw_tolets[i]['y']) + t1[1] + t2[1])/height}
+                                                                                          'y':100*(float(raw_tolets[i]['y']) + t1[1] + t2[1])/height,
+                                                                                          'gender':label.split("_")[4],
+                                                                                          'stall_count':int(label.split("_")[5]),
+                                                                                          'visits':None,
+                                                                                          'visit_time':None}
     return toilets

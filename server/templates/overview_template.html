@@ -59,7 +59,11 @@
         {% for toilet_name in floor['toilets'] %}
         <div class="tooltip">
         <a href={{request.base_url + "/" + toilet_name}} class="overlay-rectangle" style="left: {{floor['toilets'][toilet_name]['x']}}%; top: {{floor['toilets'][toilet_name]['y']}}%; width: {{floor['toilets'][toilet_name]['width']}}%; height: {{floor['toilets'][toilet_name]['height']}}%;"></a>
-        <span class="tooltiptext" style="left:{{floor['toilets'][toilet_name]['x'] + floor['toilets'][toilet_name]['width'] + 1}}%; top:{{floor['toilets'][toilet_name]['y']}}%">{{toilet_name}}</span>
+        <span class="tooltiptext" style="left:{{floor['toilets'][toilet_name]['x'] + floor['toilets'][toilet_name]['width'] + 1}}%; top:{{floor['toilets'][toilet_name]['y']}}%; width:150px">
+            {{toilet_name}}<br>
+            visits:&nbsp;&nbsp;&nbsp; {{floor['toilets'][toilet_name]['visits']}}<br>
+            visit time:{{floor['toilets'][toilet_name]['visit_time']}}
+        </span>
         </div>
         {% endfor %}
         {% endfor %}
