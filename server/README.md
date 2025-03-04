@@ -5,7 +5,7 @@
    ```bash  
    python main.py  
    ```  
-2. `test.py` will periodically send dummy JSON data to the server.  
+2. `test_client.py` will send dummy JSON data to the server.  
 
 ## Installation  
 To install the required dependencies, run:  
