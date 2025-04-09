@@ -34,28 +34,5 @@ void readNFC()
    digitalWrite(27, LOW);
    delay(1000);
    }
-   else
-   {
-   digitalWrite(27, HIGH);
-   delay(200);
-   digitalWrite(27, LOW);
-   delay(200);
-   digitalWrite(27, HIGH);
-   delay(200);
-   digitalWrite(27, LOW);
-   delay(200);
-   digitalWrite(27, HIGH);
-   delay(200);
-   digitalWrite(27, LOW);
-   delay(200);
-   digitalWrite(27, HIGH);
-   delay(200);
-   digitalWrite(27, LOW);
-   delay(200);
-   digitalWrite(27, HIGH);
-   delay(200);
-   digitalWrite(27, LOW);
-   delay(200);
-   }
  }
 }
