@@ -37,5 +37,5 @@ def parse_svg_toilets(svg_file_path):
                                                                                           'gender':label.split("_")[4],
                                                                                           'stall_count':int(label.split("_")[5]),
                                                                                           'visits':None,
-                                                                                          'visit_time':None}
+                                                                         'visit_time':None}
     return toilets

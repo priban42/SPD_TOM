@@ -50,19 +50,18 @@
 </head>
 <body>
 <p style="margin-bottom:3cm;"></p>
-
     <div class="image-container">
         <!-- Image element -->
-        {% for floor in all_floors %}
-        <img src={{floor['svg_path']}}>
+        {% for floor in building %}
+        <img src={{floor.svg_path}}>
 
-        {% for toilet_name in floor['toilets'] %}
+        {% for toilet in floor %}
         <div class="tooltip">
-        <a href={{request.base_url + "/" + toilet_name}} class="overlay-rectangle" style="left: {{floor['toilets'][toilet_name]['x']}}%; top: {{floor['toilets'][toilet_name]['y']}}%; width: {{floor['toilets'][toilet_name]['width']}}%; height: {{floor['toilets'][toilet_name]['height']}}%;"></a>
-        <span class="tooltiptext" style="left:{{floor['toilets'][toilet_name]['x'] + floor['toilets'][toilet_name]['width'] + 1}}%; top:{{floor['toilets'][toilet_name]['y']}}%; width:150px">
-            {{toilet_name}}<br>
-            visits:&nbsp;&nbsp;&nbsp; {{floor['toilets'][toilet_name]['visits']}}<br>
-            visit time:{{floor['toilets'][toilet_name]['visit_time']}}
+        <a href={{request.base_url + "/" + toilet.name}} class="overlay-rectangle" style="left: {{toilet.x}}%; top: {{toilet.y}}%; width: {{toilet.width}}%; height: {{toilet.height}}%;"></a>
+        <span class="tooltiptext" style="left:{{toilet.x + toilet.width + 1}}%; top:{{toilet.y}}%; width:150px">
+            {{toilet.name}}<br>
+            visits:&nbsp;&nbsp;&nbsp; {{toilet.visits}}<br>
+            visit time:{{toilet.visit_time}}
         </span>
         </div>
         {% endfor %}

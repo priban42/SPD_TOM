@@ -10,6 +10,8 @@ import datetime
 from utils import parse_svg_toilets
 from pathlib import Path
 import numpy as np
+from structures import *
+import os
 
 app = Flask(__name__)
 
@@ -26,7 +28,6 @@ jwt = JWTManager(app)
 admin = Admin(app, name="Admin Dashboard", template_mode="bootstrap3")
 # login_manager = LoginManager(app)
 EVENT_TYPES = ["door_closed", "door_opened", "PIR", "RFID"]
-
 
 # Database models
 class Node(db.Model):
@@ -47,6 +48,8 @@ class Event(db.Model):
     tag_id = db.Column(db.String(32), nullable=False)
     stall_id = db.Column(db.Integer, nullable=False)
     timestamp = db.Column(db.Integer, nullable=False)
+
+building = Building("T2", Event)
 
 # Create tables
 with app.app_context():
@@ -135,40 +138,23 @@ def compute_stats(timestamps):
 
 @app.route('/view')
 def overview():
-    floor_names = ["T2_1"]
-    all_floors = []
-    # timestamps = get_timestamps("T2_B3_1_0_M_3", 0)
-    # stats = compute_stats(timestamps)
-    for floor_name in floor_names:
-        floor_path = 'static/' + floor_name + ".svg"
-        all_floors.append({"svg_path":floor_path,
-                           "toilets": parse_svg_toilets(floor_path)})
-        for toilet in all_floors[-1]['toilets']:
-            visits = 0
-            visit_time = 0
-            for stall_id in range(all_floors[-1]['toilets'][toilet]['stall_count']):
-                timestamps = get_timestamps(toilet, stall_id)
-                stats = compute_stats(timestamps)
-                visits += len(stats[0])
-                visit_time += np.sum(stats[1])
-            all_floors[-1]['toilets'][toilet]['visits'] = visits
-            all_floors[-1]['toilets'][toilet]['visit_time'] = visit_time
-
-    pass
-    return render_template('overview_template.html', all_floors=all_floors)
+    building.refresh_data()
+    return render_template('overview_template.html', building=building)
 
 @app.route('/view/<string:toilet_name>/')
 def toilet_view(toilet_name):
-    timestamps = get_timestamps(toilet_name, 0)
-    stats = compute_stats(timestamps)
+    building_name = toilet_name.split("_")[0]
+    floor_name = building_name + "_" + toilet_name.split("_")[2]
+    toilet = building[floor_name][toilet_name]
+    toilet.refresh_data()
     time_now = int(time.time())
-    histogram, _ = np.histogram(stats[0], bins=(np.arange(0, 24 * 60 * 60, 60*60)+time_now - 23*60*60))
+    histogram, _ = np.histogram(toilet.visit_timestamps, bins=(np.arange(0, 24 * 60 * 60, 60*60)+time_now - 23*60*60))
     labels = np.arange(0, 23, 1)-23
     return render_template(
         template_name_or_list='toilet_view_template.html',
         data=histogram.tolist(),
         labels=labels.tolist(),
-        toilet_name=toilet_name
+        toilet=toilet,
     )
 
 # Run the server
