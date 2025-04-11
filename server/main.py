@@ -44,7 +44,7 @@ class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     node_id = db.Column(db.Integer, db.ForeignKey('node.id'), nullable=False)
     event_type = db.Column(db.Integer, nullable=False)
-    tag_id = db.Column(db.Integer, nullable=False)
+    tag_id = db.Column(db.String(32), nullable=False)
     stall_id = db.Column(db.Integer, nullable=False)
     timestamp = db.Column(db.Integer, nullable=False)
 

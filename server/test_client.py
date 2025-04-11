@@ -17,7 +17,7 @@ for i in range(5):
                     "elapsed_time": 5,
                     "timestamps": [time, time+1, time+2],
                     "event_types": [0, 2, 1],
-                    "tag_ids": [0, 0, 0],
+                    "tag_ids": ["00:00:00", "00:00:00", "00:00:00"],
                     "stall_ids": [stall_id, stall_id, stall_id]}
     time += 6
     data_response = requests.post(f"{BASE_URL}/data", json=data_payload)
