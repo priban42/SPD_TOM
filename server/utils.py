@@ -26,16 +26,29 @@ def parse_svg_toilets(svg_file_path):
                 transform2 = raw_dict['children'][2]['children'][i]['transform'][10:-1].split(',')
                 t2 = (float(transform2[0]), float(transform2[1]))
     toilets = {}
-    width = float(raw_dict['width'][:-2])
-    height = float(raw_dict['height'][:-2])
+    width = float(raw_dict['width'][:-2])  # width of the image
+    height = float(raw_dict['height'][:-2])  # height of the image
     for i in range(len(raw_tolets)):
         label = raw_tolets[i]['{http://www.inkscape.org/namespaces/inkscape}label']
-        toilets[raw_tolets[i]['{http://www.inkscape.org/namespaces/inkscape}label']] = {'width':100*float(raw_tolets[i]['width'])/width,
-                                                                                          'height':100*float(raw_tolets[i]['height'])/height,
-                                                                                          'x':100*(float(raw_tolets[i]['x']) + t1[0] + t2[0])/width,
-                                                                                          'y':100*(float(raw_tolets[i]['y']) + t1[1] + t2[1])/height,
+        stalls = {}
+        toilet = None
+        for j in range(len(raw_tolets[i]['children'])):
+            child_label = raw_tolets[i]['children'][j]['{http://www.inkscape.org/namespaces/inkscape}label']
+            if child_label == 'toilet':
+                toilet = raw_tolets[i]['children'][j]
+            else:
+                pass
+                stalls[child_label] = {'width':100*float(raw_tolets[i]['children'][j]['width'])/width,
+                                                                                          'height':100*float(raw_tolets[i]['children'][j]['height'])/height,
+                                                                                          'x':100*(float(raw_tolets[i]['children'][j]['x']) + t1[0] + t2[0])/width,
+                                                                                          'y':100*(float(raw_tolets[i]['children'][j]['y']) + t1[1] + t2[1])/height,}
+        toilets[label] = {'width':100*float(toilet['width'])/width,
+                                                                                          'height':100*float(toilet['height'])/height,
+                                                                                          'x':100*(float(toilet['x']) + t1[0] + t2[0])/width,
+                                                                                          'y':100*(float(toilet['y']) + t1[1] + t2[1])/height,
                                                                                           'gender':label.split("_")[4],
                                                                                           'stall_count':int(label.split("_")[5]),
+                                                                                          'stalls':stalls,
                                                                                           'visits':None,
                                                                          'visit_time':None}
-    return toilets
+    return toilets, width, height

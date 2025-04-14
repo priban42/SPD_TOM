@@ -1,3 +1,5 @@
+import time
+
 from utils import parse_svg_toilets
 import numpy as np
 import os
@@ -18,9 +20,9 @@ class Building:
         for floor_name in self.floors:
             yield self.floors[floor_name]
 
-    def refresh_data(self):
+    def refresh_data(self, interval=100):
         for floor in self:
-            floor.refresh_data()
+            floor.refresh_data(interval)
 
 class Floor:
     def __init__(self, parent:Building, name: str) -> None:
@@ -28,6 +30,11 @@ class Floor:
         self.svg_path = 'static/' + self.name + ".svg"
         self.parent = parent
         self.toilets = {}
+        self.visits = None
+        self.visit_time = None
+        self.last_update = 0
+        self.width = None
+        self.height = None
         self._load_toilets()
 
     def __getitem__(self, key):
@@ -39,7 +46,9 @@ class Floor:
 
     def _load_toilets(self):
         self.toilets = {}
-        toilets_dict = parse_svg_toilets(self.svg_path)
+        toilets_dict, width, height = parse_svg_toilets(self.svg_path)
+        self.width = width
+        self.height = height
         for toilet_name in toilets_dict:
             self.toilets[toilet_name] = Toilet(self,
                                                toilet_name,
@@ -48,14 +57,20 @@ class Floor:
                                                toilets_dict[toilet_name]["x"],
                                                toilets_dict[toilet_name]["y"],
                                                toilets_dict[toilet_name]["gender"],
-                                               toilets_dict[toilet_name]["stall_count"])
-    def refresh_data(self):
+                                               toilets_dict[toilet_name]["stall_count"],
+                                               toilets_dict[toilet_name]["stalls"])
+
+    def refresh_data(self, interval=100):
+        self.visits = 0
+        self.visit_time = 0
         for toilet in self:
-            toilet.refresh_data()
+            toilet.refresh_data(interval)
+            self.visits += toilet.visits
+            self.visit_time += toilet.visit_time
 
 
 class Toilet:
-    def __init__(self, parent: Floor, name: str, width: float, height: float, x: float, y: float, gender: str, stall_count: int) -> None:
+    def __init__(self, parent: Floor, name: str, width: float, height: float, x: float, y: float, gender: str, stall_count: int, stalls_dict: dict) -> None:
         self.parent = parent
         self.name = name
         self.width = width
@@ -68,28 +83,32 @@ class Toilet:
         self.visit_time = None
         self.visit_timestamps = None
         self.visit_durations = None
-        self.stalls = []
-        self._load_stalls()
+        self.stalls = {}
+        self._load_stalls(stalls_dict)
 
     def __getitem__(self, key):
         return self.stalls[key]
 
     def __iter__(self):
-        for stall in self.stalls:
-            yield stall
+        for stall_name in self.stalls:
+            yield self.stalls[stall_name]
 
-    def _load_stalls(self):
-        self.stalls = []
-        for i in range(self.stall_count):
-            self.stalls.append(Stall(self, i))
+    def _load_stalls(self, stalls_dict):
+        self.stalls = {}
+        for key in stalls_dict:
+            self.stalls[key] = (Stall(self, int(key),
+                                      stalls_dict[key]["width"],
+                                      stalls_dict[key]["height"],
+                                      stalls_dict[key]["x"],
+                                      stalls_dict[key]["y"]))
 
-    def refresh_data(self):
+    def refresh_data(self, interval=100):
         self.visits = 0
         self.visit_time = 0
         self.visit_timestamps = np.array([], dtype=np.int64)
         self.visit_durations = np.array([], dtype=np.int64)
         for stall in self:
-            stall.refresh_data()
+            stall.refresh_data(interval=100)
             self.visits += stall.visits
             self.visit_time += stall.visit_time
             self.visit_timestamps = np.hstack((self.visit_timestamps, stall.visit_timestamps))
@@ -97,14 +116,19 @@ class Toilet:
 
 
 class Stall:
-    def __init__(self, parent: Toilet, id: int) -> None:
+    def __init__(self, parent: Toilet, id: int, width: float, height: float, x: float, y: float) -> None:
         self.parent = parent
         self.id = id
+        self.width = width
+        self.height = height
+        self.x = x
+        self.y = y
         self.timestamps = None
         self.visit_timestamps = None
         self.visit_durations = None
         self.visits = None
         self.visit_time = None
+        self.last_update = 0
 
     def get_timestamps(self):
         events = self.parent.parent.parent.events.query.filter_by(node_id=self.parent.name, stall_id=self.id).all()
@@ -137,8 +161,9 @@ class Stall:
                 detected = True
         return [np.array(visit_timestamps, dtype=np.int64), np.array(visit_durations, dtype=np.int64)]
 
-    def refresh_data(self):
-        self.timestamps = self.get_timestamps()
-        self.visit_timestamps, self.visit_durations = self.compute_stats(self.timestamps)
-        self.visits = len(self.visit_timestamps)
-        self.visit_time = np.sum(self.visit_durations)
+    def refresh_data(self, interval=100):
+        if (time.time() - self.last_update) > interval:
+            self.timestamps = self.get_timestamps()
+            self.visit_timestamps, self.visit_durations = self.compute_stats(self.timestamps)
+            self.visits = len(self.visit_timestamps)
+            self.visit_time = np.sum(self.visit_durations)

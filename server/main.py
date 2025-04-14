@@ -51,6 +51,7 @@ class Event(db.Model):
 
 building = Building("T2", Event)
 
+
 # Create tables
 with app.app_context():
     db.create_all()
@@ -81,6 +82,7 @@ class EventModelView(ModelView):
 if DEBUG:
     admin.add_view(NodeModelView(Node, db.session))
     admin.add_view(EventModelView(Event, db.session))
+
 
 # db.session.add(Node(node_id='username', password=bcrypt.generate_password_hash('password').decode('utf-8')))
 # db.session.commit()
@@ -136,17 +138,30 @@ def compute_stats(timestamps):
             detected = True
     return np.array(visit_timestamps, dtype=np.int64), np.array(visit_durations, dtype=np.int64)
 
+def heatmap_color(value, a=0.3):
+    """
+    Map a float value between 0 and 1 to a heatmap color from green to red.
+    """
+    value = max(0.0, min(1.0, value))  # Clamp to [0, 1]
+    r = int(255 * value)
+    g = int(255 * (1 - value))
+    b = 0
+    return f'rgba({r}, {g}, {b}, {a})'
+
 @app.route('/view')
 def overview():
     building.refresh_data()
-    return render_template('overview_template.html', building=building)
+    return render_template('overview_template.html', building=building, color_mapping=heatmap_color)
+
+
 
 @app.route('/view/<string:toilet_name>/')
 def toilet_view(toilet_name):
     building_name = toilet_name.split("_")[0]
     floor_name = building_name + "_" + toilet_name.split("_")[2]
     toilet = building[floor_name][toilet_name]
-    toilet.refresh_data()
+    toilet.parent.refresh_data()
+    # toilet.refresh_data()
     time_now = int(time.time())
     histogram, _ = np.histogram(toilet.visit_timestamps, bins=(np.arange(0, 24 * 60 * 60, 60*60)+time_now - 23*60*60))
     labels = np.arange(0, 23, 1)-23
@@ -155,9 +170,16 @@ def toilet_view(toilet_name):
         data=histogram.tolist(),
         labels=labels.tolist(),
         toilet=toilet,
+        scale=20,
+        color_mapping=heatmap_color
     )
+
+
+
 
 # Run the server
 if __name__ == '__main__':
+
     app.run(debug=DEBUG)
+    building.refresh_data()
     # app.run(debug=DEBUG, host="0.0.0.0")  # use this to host on local network

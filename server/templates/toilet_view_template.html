@@ -8,14 +8,14 @@
 	    <style>
 			.box {
 		width: 500px;  /* Set the desired width of the box */
-		height: 400px; /* Set the desired height of the box */
+		height: 500px; /* Set the desired height of the box */
 		overflow: hidden; /* This will hide any overflow content inside the box */
 		position: relative; /* Make the box a positioned container for the image */
 		border: 2px solid black; /* Add a black border with 2px width */
 	}
         .image {
         position: absolute;
-		width: {{100*100}}px;  /* Ensure the image takes up the full width of the box */
+		width: {{scale*500}}px;  /* Ensure the image takes up the full width of the box */
 		transform: translate(-{{ toilet.x -0.5}}%, -{{ toilet.y - 3.5+toilet.height/2}}%);
 		height: auto; /* Maintain the aspect ratio of the image */
 		object-fit: cover; /* This makes the image cover the box, cropping it if necessary */
@@ -27,6 +27,30 @@
             height: 100%;
             display: block;
         }
+			        .overlay-rectangle {
+            position: absolute;
+<!--            border: 2px solid #ff0000;  /* Rectangle border color */-->
+<!--            background-color: rgba(255, 0, 0, 0.3); /* Semi-transparent background */-->
+        }
+
+      .tooltip {
+        }
+
+        /* Tooltip text */
+        .tooltip .tooltiptext {
+          position: absolute;
+          visibility: hidden;
+          background-color: black;
+          color: #fff;
+          text-align: center;
+          padding: 5px 0;
+          border-radius: 6px;
+        }
+
+        /* Show the tooltip text when you mouse over the tooltip container */
+        .tooltip:hover .tooltiptext {
+          visibility: visible;
+        }
     </style>
 </head>
 
@@ -34,6 +58,26 @@
 	<h>{{toilet.name}}</h>
 	<div class="box">
     <img src="{{ '/' + toilet.parent.svg_path }}" alt="Image inside box" class="image">
+<!--	<div class="tooltip">-->
+<!--	<a href={{request.base_url + "/" + toilet.name}} class="overlay-rectangle" style="left: {{(scale)*(0.5)}}%; top: {{(scale)*(3.5-(toilet.height)/(2))*toilet.parent.height/toilet.parent.width}}%; width: {{(scale)*toilet.width}}%; height: {{(scale)*toilet.height*toilet.parent.height/toilet.parent.width}}%;border: 2px solid #ff0000; background-color: {{color_mapping(toilet.visits/(1+toilet.parent.visits))}};"></a>-->
+<!--	<span class="tooltiptext" style="left:{{toilet.x + toilet.width + 1}}%; top:{{toilet.y}}%; width:150px">-->
+<!--		{{toilet.name}}<br>-->
+<!--		visits:&nbsp;&nbsp;&nbsp; {{toilet.visits}}<br>-->
+<!--		visit time:{{toilet.visit_time}}-->
+<!--	</span>-->
+<!--	</div>-->
+
+		{% for stall in toilet %}
+        <div class="tooltip">
+        <a href={{request.url_root  + 'view'}} class="overlay-rectangle" style="left: {{scale*(0.5+stall.x-toilet.x)}}%; top: {{(scale)*(3.5-(toilet.height)/(2)+stall.y-toilet.y)*toilet.parent.height/toilet.parent.width}}%; width: {{scale*stall.width}}%; height: {{scale*stall.height*toilet.parent.height/toilet.parent.width}}%;border: 2px solid #ff0000; background-color: {{color_mapping(stall.visits/(1+toilet.visits))}};"></a>
+        <span class="tooltiptext" style="left:{{scale*(0.5+stall.x - toilet.x -stall.width/2)}}%; top:{{(scale)*(3.5-(toilet.height)/(2)+stall.y-toilet.y+stall.height)*toilet.parent.height/toilet.parent.width}}%; width:150px">
+            stall: {{stall.id}}<br>
+            visits:&nbsp;&nbsp;&nbsp; {{stall.visits}}<br>
+            visit time:{{stall.visit_time}} s
+        </span>
+			<div style="position: absolute; left:{{scale*(0.5+stall.x-toilet.x+stall.width/2)}}%; top:{{(scale)*(3.5-(toilet.height)/(2)+stall.y-toilet.y+stall.height/2)*toilet.parent.height/toilet.parent.width}}%;font-size: 32px">{{stall.id}}</div>
+        </div>
+        {% endfor %}
 	</div>
 
 	<div style="height: 50vh; width: 50%;">
