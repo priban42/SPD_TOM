@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+        <title>{% block title %}My Site{% endblock %}</title>
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Fixed top bar styles */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: #1e1e2f;
+            color: white;
+            padding: 0.5% 1%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        header a {
+            color: white;
+            text-decoration: none;
+            margin-left: 1.5rem;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        header a:hover {
+            text-decoration: underline;
+        }
+
+        main {
+            padding: 6rem 2rem 2rem;
+            max-width: 100%;
+        }
+
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- 🔹 This is your default header -->
+    <header>
+        <div class="logo">
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+        </div>
+    </header>
+
+    <main>
+        {% block body %}{% endblock %}
+    </main>
+</body>
+</html>

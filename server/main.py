@@ -49,7 +49,8 @@ class Event(db.Model):
     stall_id = db.Column(db.Integer, nullable=False)
     timestamp = db.Column(db.Integer, nullable=False)
 
-building = Building("T2", Event)
+buildings = {"T2":Building("T2", Event),
+             "KN":Building("KN", Event)}
 
 
 # Create tables
@@ -148,16 +149,23 @@ def heatmap_color(value, a=0.3):
     b = 0
     return f'rgba({r}, {g}, {b}, {a})'
 
-@app.route('/view')
-def overview():
+@app.route('/')
+def title():
+    return render_template('title.html')
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/building_view/<string:building_name>')
+def overview(building_name):
+    building = buildings[building_name]
     building.refresh_data()
     return render_template('overview_template.html', building=building, color_mapping=heatmap_color)
 
-
-
-@app.route('/view/<string:toilet_name>/')
+@app.route('/toilet_view/<string:toilet_name>/')
 def toilet_view(toilet_name):
     building_name = toilet_name.split("_")[0]
+    building = buildings[building_name]
     floor_name = building_name + "_" + toilet_name.split("_")[2]
     toilet = building[floor_name][toilet_name]
     toilet.parent.refresh_data()
@@ -175,11 +183,10 @@ def toilet_view(toilet_name):
     )
 
 
-
-
 # Run the server
 if __name__ == '__main__':
 
     app.run(debug=DEBUG)
-    building.refresh_data()
+    for key in buildings:
+        buildings[key].refresh_data()
     # app.run(debug=DEBUG, host="0.0.0.0")  # use this to host on local network

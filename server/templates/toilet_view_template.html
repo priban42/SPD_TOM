@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-
+{% extends "base.html" %}
 <head>
+	{% block head %}
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	<title>Chartjs Charts</title>
 
@@ -52,9 +53,11 @@
           visibility: visible;
         }
     </style>
+	{% endblock %}
 </head>
 
 <body>
+{% block body %}
 	<h>{{toilet.name}}</h>
 	<div class="box">
     <img src="{{ '/' + toilet.parent.svg_path }}" alt="Image inside box" class="image">
@@ -69,7 +72,7 @@
 
 		{% for stall in toilet %}
         <div class="tooltip">
-        <a href={{request.url_root  + 'view'}} class="overlay-rectangle" style="left: {{scale*(0.5+stall.x-toilet.x)}}%; top: {{(scale)*(3.5-(toilet.height)/(2)+stall.y-toilet.y)*toilet.parent.height/toilet.parent.width}}%; width: {{scale*stall.width}}%; height: {{scale*stall.height*toilet.parent.height/toilet.parent.width}}%;border: 2px solid #ff0000; background-color: {{color_mapping(stall.visits/(1+toilet.visits))}};"></a>
+        <a href="/" class="overlay-rectangle" style="left: {{scale*(0.5+stall.x-toilet.x)}}%; top: {{(scale)*(3.5-(toilet.height)/(2)+stall.y-toilet.y)*toilet.parent.height/toilet.parent.width}}%; width: {{scale*stall.width}}%; height: {{scale*stall.height*toilet.parent.height/toilet.parent.width}}%;border: 2px solid #ff0000; background-color: {{color_mapping(stall.visits/(1+toilet.visits))}};"></a>
         <span class="tooltiptext" style="left:{{scale*(0.5+stall.x - toilet.x -stall.width/2)}}%; top:{{(scale)*(3.5-(toilet.height)/(2)+stall.y-toilet.y+stall.height)*toilet.parent.height/toilet.parent.width}}%; width:150px">
             stall: {{stall.id}}<br>
             visits:&nbsp;&nbsp;&nbsp; {{stall.visits}}<br>
@@ -109,5 +112,6 @@
 		);
 
 	</script>
+{% endblock %}
 </body>
 </html>

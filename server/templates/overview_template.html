@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+{% extends "base.html" %}
 <head>
+    {% block head %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image with Overlay Rectangle</title>
@@ -47,17 +49,19 @@
           visibility: visible;
         }
     </style>
+    {% endblock %}
 </head>
 <body>
+{% block body %}
 <p style="margin-bottom:3cm;"></p>
     <div class="image-container">
         <!-- Image element -->
         {% for floor in building %}
-        <img src={{floor.svg_path}}>
+        <img src={{'/' + floor.svg_path}}>
 
         {% for toilet in floor %}
         <div class="tooltip">
-        <a href={{request.base_url + "/" + toilet.name}} class="overlay-rectangle" style="left: {{toilet.x}}%; top: {{toilet.y}}%; width: {{toilet.width}}%; height: {{toilet.height}}%;border: 2px solid #ff0000; background-color: {{color_mapping(toilet.visits/(1+floor.visits))}};"></a>
+        <a href={{request.url_root + "toilet_view" + "/" + toilet.name}} class="overlay-rectangle" style="left: {{toilet.x}}%; top: {{toilet.y}}%; width: {{toilet.width}}%; height: {{toilet.height}}%;border: 0px solid #ff0000; background-color: {{color_mapping(toilet.visits/(1+floor.visits))}};"></a>
         <span class="tooltiptext" style="left:{{toilet.x + toilet.width + 1}}%; top:{{toilet.y}}%; width:150px">
             {{toilet.name}}<br>
             visits:&nbsp;&nbsp;&nbsp; {{toilet.visits}}<br>
@@ -68,6 +72,6 @@
         {% endfor %}
         <!-- Rectangle overlay with a hyperlink -->
     </div>
-
+{% endblock %}
 </body>
 </html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+{% extends "base.html" %}
+<head>
+    {% block head %}
+    <meta charset="UTF-8">
+    <title>Choose an Option</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .image-box {
+            width: 30vw;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, filter 0.3s ease;
+            filter: grayscale(100%);
+            cursor: pointer;
+        }
+
+        .image-box:hover {
+            transform: scale(1.05);
+            filter: grayscale(0%);
+        }
+
+        .image-box img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+    </style>
+    {% endblock %}
+</head>
+<body>
+{% block body %}
+<div class="container">
+    <a href="building_view/KN" class="image-box">
+        <img src="{{ url_for('static', filename='images/karlak.jpg') }}" alt="Option 1">
+    </a>
+    <a href="building_view/T2" class="image-box">
+        <img src="{{ url_for('static', filename='images/dejvice.jpg') }}" alt="Option 2">
+    </a>
+</div>
+{% endblock %}
+</body>
+</html>
