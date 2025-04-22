@@ -186,7 +186,7 @@ def toilet_view(toilet_name):
 # Run the server
 if __name__ == '__main__':
 
-    app.run(debug=DEBUG)
+    # app.run(debug=DEBUG)
+    app.run(debug=DEBUG, host="0.0.0.0")  # use this to host on local network
     for key in buildings:
         buildings[key].refresh_data()
-    # app.run(debug=DEBUG, host="0.0.0.0")  # use this to host on local network
