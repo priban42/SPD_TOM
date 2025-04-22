@@ -20,6 +20,7 @@ for i in range(5):
                     "tag_ids": ["00:00:00", "00:00:00", "00:00:00"],
                     "stall_ids": [stall_id, stall_id, stall_id]}
     time += 6
+
     data_response = requests.post(f"{BASE_URL}/data", json=data_payload)
     print("Data response:", data_response.json())
 # data_response = requests.post(f"{BASE_URL}/data", data=json.dumps(data_payload), headers=headers)
