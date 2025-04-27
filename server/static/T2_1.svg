@@ -24,9 +24,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="16"
-     inkscape:cx="598.40624"
-     inkscape:cy="277.03124"
+     inkscape:zoom="0.70710678"
+     inkscape:cx="-50.204581"
+     inkscape:cy="222.73864"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="1912"
@@ -113,7 +113,7 @@
          sodipodi:nodetypes="ccccc" /></g><g
        id="g2"
        inkscape:label="toilets"
-       style="display:inline"><g
+       style="display:none"><g
          id="g12"
          inkscape:label="T2_B3_1_0_M_3"><rect
            style="opacity:0.532988;fill:#5dff67;fill-opacity:1;stroke:#000000;stroke-width:0.102154;stroke-linecap:square;stroke-linejoin:round"

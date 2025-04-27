@@ -1,5 +1,5 @@
 import time
-from flask import Flask, request, jsonify, render_template, session
+from flask import Flask, request, jsonify, render_template, session, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_admin import Admin
@@ -7,7 +7,9 @@ from flask_admin.contrib.sqla import ModelView
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user
 import datetime
-from utils import parse_svg_toilets
+
+from server.utils import heatmap_color, get_histogram
+from utils import parse_svg_toilets, heatmap_color, get_time_labels
 from pathlib import Path
 import numpy as np
 from structures import *
@@ -109,46 +111,6 @@ def store_data():
         return jsonify({"message": "Data stored successfully"}), 201
     return jsonify({"message": "Invalid credentials"}), 401
 
-def get_timestamps(node_id, stall_id):
-    events = Event.query.filter_by(node_id=node_id, stall_id=stall_id).all()
-    event_timestamps = np.zeros((len(events), 2), dtype=np.int64)
-    for i in range(len(events)):
-        event_timestamps[i, 0] = events[i].timestamp
-        event_timestamps[i, 1] = events[i].event_type
-    return event_timestamps
-
-def compute_stats(timestamps):
-    last_state = 1
-    detected = False
-    door_closed_ts = None
-    visit_timestamps = []
-    visit_durations = []
-    for i in range(timestamps.shape[0]):
-        state = timestamps[i, 1]
-        if state == 1 and detected and last_state == 0:
-            visit_timestamps.append(door_closed_ts)
-            visit_durations.append(timestamps[i, 0] - door_closed_ts)
-            detected = False
-            door_closed_ts = None
-            last_state = 1
-        if state == 0:
-            detected = False
-            last_state = 0
-            door_closed_ts = timestamps[i, 0]
-        if state == 2:
-            detected = True
-    return np.array(visit_timestamps, dtype=np.int64), np.array(visit_durations, dtype=np.int64)
-
-def heatmap_color(value, a=0.3):
-    """
-    Map a float value between 0 and 1 to a heatmap color from green to red.
-    """
-    value = max(0.0, min(1.0, value))  # Clamp to [0, 1]
-    r = int(255 * value)
-    g = int(255 * (1 - value))
-    b = 0
-    return f'rgba({r}, {g}, {b}, {a})'
-
 @app.route('/')
 def title():
     return render_template('title.html')
@@ -162,8 +124,10 @@ def overview(building_name):
     building.refresh_data()
     return render_template('overview_template.html', building=building, color_mapping=heatmap_color)
 
-@app.route('/toilet_view/<string:toilet_name>/')
-def toilet_view(toilet_name):
+@app.route('/toilet_view/<string:toilet_name>/<string:interval>')
+def toilet_view(toilet_name, interval):
+    if interval not in ["day", "week", "month", "year"]:
+        return redirect(url_for('toilet_view', toilet_name=toilet_name, interval="day"))
     building_name = toilet_name.split("_")[0]
     building = buildings[building_name]
     floor_name = building_name + "_" + toilet_name.split("_")[2]
@@ -173,10 +137,15 @@ def toilet_view(toilet_name):
     time_now = int(time.time())
     histogram, _ = np.histogram(toilet.visit_timestamps, bins=(np.arange(0, 24 * 60 * 60, 60*60)+time_now - 23*60*60))
     labels = np.arange(0, 23, 1)-23
+    labels = get_time_labels("day")
+    bagr = get_time_labels("week")
     return render_template(
         template_name_or_list='toilet_view_template.html',
-        data=histogram.tolist(),
-        labels=labels.tolist(),
+        get_histogram=get_histogram,
+        get_time_labels=get_time_labels,
+        interval=interval,
+        # data=histogram.tolist(),
+        # labels=labels,
         toilet=toilet,
         scale=20,
         color_mapping=heatmap_color

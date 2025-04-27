@@ -56,8 +56,19 @@
 	{% endblock %}
 </head>
 
+{%block header%}
+<div style="display: flex; justify-content: flex-start; gap: 20px; padding: 10px;">
+    <a href="/toilet_view/{{ toilet.name }}/day">Day</a>
+    <a href="/toilet_view/{{ toilet.name }}/week">Week</a>
+    <a href="/toilet_view/{{ toilet.name }}/month">Month</a>
+    <a href="/toilet_view/{{ toilet.name }}/year">Year</a>
+</div>
+{% endblock %}
+
 <body>
 {% block body %}
+<div style="display: flex; width: 100%;">
+	<div style="flex: 1; padding: 10px; border: 1px solid #ccc;">
 	<h>{{toilet.name}}</h>
 	<div class="box">
     <img src="{{ '/' + toilet.parent.svg_path }}" alt="Image inside box" class="image">
@@ -72,7 +83,7 @@
 
 		{% for stall in toilet %}
         <div class="tooltip">
-        <a href="/" class="overlay-rectangle" style="left: {{scale*(0.5+stall.x-toilet.x)}}%; top: {{(scale)*(3.5-(toilet.height)/(2)+stall.y-toilet.y)*toilet.parent.height/toilet.parent.width}}%; width: {{scale*stall.width}}%; height: {{scale*stall.height*toilet.parent.height/toilet.parent.width}}%;border: 2px solid #ff0000; background-color: {{color_mapping(stall.visits/(1+toilet.visits))}};"></a>
+        <a class="overlay-rectangle" style="left: {{scale*(0.5+stall.x-toilet.x)}}%; top: {{(scale)*(3.5-(toilet.height)/(2)+stall.y-toilet.y)*toilet.parent.height/toilet.parent.width}}%; width: {{scale*stall.width}}%; height: {{scale*stall.height*toilet.parent.height/toilet.parent.width}}%;border: 0px solid #ff0000; background-color: {{color_mapping(stall.visits/(1+toilet.visits))}};"></a>
         <span class="tooltiptext" style="left:{{scale*(0.5+stall.x - toilet.x -stall.width/2)}}%; top:{{(scale)*(3.5-(toilet.height)/(2)+stall.y-toilet.y+stall.height)*toilet.parent.height/toilet.parent.width}}%; width:150px">
             stall: {{stall.id}}<br>
             visits:&nbsp;&nbsp;&nbsp; {{stall.visits}}<br>
@@ -83,12 +94,12 @@
         {% endfor %}
 	</div>
 
-	<div style="height: 50vh; width: 50%;">
-		<canvas id="myChart"></canvas>
+	<div style="height: 40vh; width: 80%;">
+		<canvas id="toilet_chart"></canvas>
 	</div>
 
 	<script>
-		const labels = {{ labels | tojson}};
+		const labels = {{ get_time_labels(interval) | tojson}};
 
 		const data = {
 			labels: labels,
@@ -96,7 +107,7 @@
 				label: 'visits',
 				backgroundColor: 'rgb(150, 150, 200)',
 				borderColor: 'rgb(100, 100, 200)',
-				data: {{ data | tojson}},
+				data: {{ get_histogram(toilet.visit_timestamps, interval) | tojson}},
 			}]
 		};
 
@@ -107,11 +118,46 @@
 		};
 
 		const myChart = new Chart(
-			document.getElementById('myChart'),
+			document.getElementById('toilet_chart'),
 			config
 		);
 
 	</script>
+	</div>
+	<div style="flex: 1; padding: 10px; border: 1px solid #ccc;">
+		{% for stall in toilet %}
+		<p>Stall {{stall.id}}</p>
+			<div style="height: 40vh; width: 80%;">
+		<canvas id="stall_{{stall.id}}_chart"></canvas>
+	</div>
+		<script>
+		const labels_{{stall.id}} = {{ get_time_labels(interval) | tojson}};
+
+		const data_{{stall.id}} = {
+			labels: labels,
+			datasets: [{
+				label: 'visits',
+				backgroundColor: 'rgb(150, 150, 200)',
+				borderColor: 'rgb(100, 100, 200)',
+				data: {{ get_histogram(stall.visit_timestamps, interval) | tojson}},
+			}]
+		};
+
+		const config_{{stall.id}} = {
+			type: 'line',
+			data: data_{{stall.id}},
+			options: { maintainAspectRatio: false}
+		};
+
+		const chart_{{stall.id}} = new Chart(
+			document.getElementById("stall_{{stall.id}}_chart"),
+			config_{{stall.id}}
+		);
+
+	</script>
+		{% endfor %}
+		</div>
+	</div>
 {% endblock %}
 </body>
 </html>

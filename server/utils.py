@@ -1,4 +1,7 @@
 import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta
+import calendar
+import numpy as np
 
 def parse_svg_toilets(svg_file_path):
     # Parse the SVG file
@@ -61,3 +64,63 @@ def parse_svg_toilets(svg_file_path):
                                                                                           'visits':None,
                                                                          'visit_time':None}
     return toilets, width, height
+
+def heatmap_color(value, a=0.3):
+    """
+    Map a float value between 0 and 1 to a heatmap color from green to red.
+    """
+    value = max(0.0, min(1.0, value))  # Clamp to [0, 1]
+    r = int(255 * value)
+    g = int(255 * (1 - value))
+    b = 0
+    return f'rgba({r}, {g}, {b}, {a})'
+
+
+def get_time_labels(interval="today"):
+    now = datetime.now()
+    labels = []
+
+    if interval == "day":
+        for i in range(24):
+            hour = (now - timedelta(hours=23 - i)).replace(minute=0, second=0, microsecond=0)
+            labels.append(hour.strftime("%H:00"))
+
+    elif interval == "week":
+        for i in range(7):
+            day = (now - timedelta(days=6 - i))
+            labels.append(day.strftime("%d.%m"))
+
+    elif interval == "month":
+        for i in range(30):
+            day = (now - timedelta(days=29 - i))
+            labels.append(day.strftime("%d.%m"))
+
+    elif interval == "year":
+        for i in range(12):
+            month = (now.replace(day=1) - timedelta(days=30 * (11 - i)))
+            labels.append(month.strftime("%B"))
+
+    return labels
+
+
+def get_histogram(visit_timestamps, interval="day"):
+    now = datetime.now()
+    now_ts = now.timestamp()
+
+    if interval == "day":
+        bins = np.arange(0, 24 * 60 * 60 + 1, 60 * 60) + now_ts - 23 * 60 * 60
+
+    elif interval == "week":
+        bins = np.arange(0, 7 * 24 * 60 * 60 + 1, 24 * 60 * 60) + now_ts - 6 * 24 * 60 * 60
+
+    elif interval == "month":
+        bins = np.arange(0, 30 * 24 * 60 * 60 + 1, 24 * 60 * 60) + now_ts - 29 * 24 * 60 * 60
+
+    elif interval == "year":
+        bins = np.arange(0, 12 * 30 * 24 * 60 * 60 + 1, 30 * 24 * 60 * 60) + now_ts - 11 * 30 * 24 * 60 * 60
+
+    else:
+        raise ValueError(f"Unknown interval: {interval}")
+
+    histogram, _ = np.histogram(visit_timestamps, bins=bins)
+    return histogram.tolist()

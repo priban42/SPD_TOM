@@ -61,7 +61,7 @@
 
         {% for toilet in floor %}
         <div class="tooltip">
-        <a href={{request.url_root + "toilet_view" + "/" + toilet.name}} class="overlay-rectangle" style="left: {{toilet.x}}%; top: {{toilet.y}}%; width: {{toilet.width}}%; height: {{toilet.height}}%;border: 0px solid #ff0000; background-color: {{color_mapping(toilet.visits/(1+floor.visits))}};"></a>
+        <a href={{request.url_root + "toilet_view" + "/" + toilet.name + "/day"}} class="overlay-rectangle" style="left: {{toilet.x}}%; top: {{toilet.y}}%; width: {{toilet.width}}%; height: {{toilet.height}}%;border: 0px solid #ff0000; background-color: {{color_mapping(toilet.visits/(1+floor.visits))}};"></a>
         <span class="tooltiptext" style="left:{{toilet.x + toilet.width + 1}}%; top:{{toilet.y}}%; width:150px">
             {{toilet.name}}<br>
             visits:&nbsp;&nbsp;&nbsp; {{toilet.visits}}<br>
