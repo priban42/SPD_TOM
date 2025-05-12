@@ -1,5 +1,7 @@
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+import pytz
 import calendar
 import numpy as np
 
@@ -108,16 +110,16 @@ def get_histogram(visit_timestamps, interval="day"):
     now_ts = now.timestamp()
 
     if interval == "day":
-        bins = np.arange(0, 24 * 60 * 60 + 1, 60 * 60) + now_ts - 23 * 60 * 60
+        bins = np.arange(0, 24 * 60 * 60 + 1, 60 * 60) + now_ts - 24 * 60 * 60
 
     elif interval == "week":
-        bins = np.arange(0, 7 * 24 * 60 * 60 + 1, 24 * 60 * 60) + now_ts - 6 * 24 * 60 * 60
+        bins = np.arange(0, 7 * 24 * 60 * 60 + 1, 24 * 60 * 60) + now_ts - 7 * 24 * 60 * 60
 
     elif interval == "month":
-        bins = np.arange(0, 30 * 24 * 60 * 60 + 1, 24 * 60 * 60) + now_ts - 29 * 24 * 60 * 60
+        bins = np.arange(0, 30 * 24 * 60 * 60 + 1, 24 * 60 * 60) + now_ts - 30 * 24 * 60 * 60
 
     elif interval == "year":
-        bins = np.arange(0, 12 * 30 * 24 * 60 * 60 + 1, 30 * 24 * 60 * 60) + now_ts - 11 * 30 * 24 * 60 * 60
+        bins = np.arange(0, 12 * 30 * 24 * 60 * 60 + 1, 30 * 24 * 60 * 60) + now_ts - 12 * 30 * 24 * 60 * 60
 
     else:
         raise ValueError(f"Unknown interval: {interval}")
